@@ -135,6 +135,35 @@ types/
   recipe.ts
 ```
 
+## Architecture
+
+```mermaid
+flowchart LR
+  User["User"] --> UI["Next.js App UI<br/>Paste Text / YouTube Link"]
+  UI --> ExtractAPI["/api/extract<br/>/api/ingest/youtube"]
+  ExtractAPI --> GeminiExtract["Gemini<br/>Structured Recipe JSON"]
+  GeminiExtract --> RecipeState["Cart Context<br/>Recipe + Servings"]
+
+  RecipeState --> CartAPI["/api/cart/build"]
+  CartAPI --> QueryNormalize["Ingredient Query Normalization"]
+  QueryNormalize --> SwiggySearch["Swiggy MCP<br/>Instamart search_products"]
+  SwiggySearch --> HardFilters["Hard Semantic Filters"]
+  HardFilters --> GeminiRank["Gemini Re-rank<br/>Actual Returned Products"]
+  GeminiRank --> PackSelect["Pack-size Selection<br/>Quantity Scaling"]
+  PackSelect --> CartState["Editable Cart State"]
+
+  UI --> AddressAPI["/api/instamart/addresses"]
+  AddressAPI --> SwiggyAddress["Swiggy MCP<br/>get_addresses"]
+  SwiggyAddress --> CartState
+
+  CartState --> RightRail["Persistent Cart Panel"]
+  CartState --> RemoveItem["Remove Item<br/>Recalculate Totals"]
+
+  CartState -. disabled .-> Checkout["/api/checkout<br/>501 Stub"]
+```
+
+The checkout edge is intentionally disabled. The app can search, match, and prepare a cart, but it cannot place a real Instamart order.
+
 ## Matching Pipeline
 
 Product matching intentionally happens before pack-size selection:
