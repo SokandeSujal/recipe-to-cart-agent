@@ -1,8 +1,5 @@
-export async function GET() {
-  return Response.json(
-    {
-      error: "Swiggy MCP OAuth callback is not implemented until Stage 4.",
-    },
-    { status: 501 },
-  );
+import { handleAuthorizationCallback } from "@/lib/swiggy/auth";
+
+export async function GET(request: Request) {
+  return handleAuthorizationCallback(request);
 }
